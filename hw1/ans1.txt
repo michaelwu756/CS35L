@@ -1,0 +1,116 @@
+1. Use the command "man -k [string]" to search for all commands that
+have a specific word in their man page.
+
+I used 'man man' to figure this out.
+
+2. cp is located at /bin and wc is located at /usr/bin.
+
+I used 'whereis cp' and 'whereis wc' to find this info, respectively.
+
+3. The three commands with only one character are [, X, and w. X is a
+windows manager. [ is used for expressions to check file types and
+compare values. w shows who is logged on and what they are doing.
+
+I used 'find /usr/bin -executable -name ?' and 'find /bin -executable
+-name ?' to list all the commands with one character in its name.
+Then I used the man pages to find the descriptions. I googled that [
+is the same as test, since there was no man page for it.
+
+4. It points to /etc/alternatives/emacs.
+
+I found this by using "ls -l /usr/bin/emacs".
+
+5. The g+s,o-x mode adds the setgid bit and removes execute
+permissions for others on a given file or directory.
+
+I found this out by doing man chmod.
+
+6. The option -mtime -21 does this.
+
+I found this out by doing man find.
+
+7. 'find / -mtime -21 -type d' is the command necessary to execute.
+
+This follows from the previous answer.
+
+8. There are 20 symbolic links in /bin, which is the directory of find.
+
+I found this out by doing 'whereis find' to find the directory of
+find, then doing 'find /bin -type l | wc' to count the number of
+symbolic links in the directory.
+
+9. libgamin-1.so.0.1.10 is the oldest regular file in /usr/lib
+
+I did 'ls --sort=t -l /usr/lib' and looked at the last entry to find
+this out.
+
+10. locale gets data from the /usr/share/i18n directory.
+
+I did localedef --help to find the system's directory for locale path.
+
+11.
+Buffer-menu-sort
+Buffer-menu-sort-by-column
+ibuffer-invert-sorting
+ibuffer-toggle-sorting-mode
+rmail-sort-by-author
+rmail-sort-by-correspondent
+rmail-sort-by-date
+rmail-sort-by-labels
+rmail-sort-by-lines
+rmail-sort-by-recipient
+rmail-sort-by-subject
+sort-columns
+sort-fields
+sort-lines
+sort-numeric-fields
+sort-pages
+sort-paragraphs
+sort-regexp-fields
+Buffer-menu-sort
+Buffer-menu-sort-by-column
+ibuffer-invert-sorting
+ibuffer-toggle-sorting-mode
+rmail-sort-by-author
+rmail-sort-by-correspondent
+rmail-sort-by-date
+rmail-sort-by-labels
+rmail-sort-by-lines
+rmail-sort-by-recipient
+rmail-sort-by-subject
+sort-columns
+sort-fields
+sort-lines
+sort-numeric-fields
+sort-pages
+sort-paragraphs
+sort-regexp-fields
+
+I found this by using the apropos command in emacs and searching for
+sort.
+
+12.
+C-M-a move backwards to the beginning of a defined function.
+C-M-b move backwards across one balanced expression.
+C-M-c exit from the innermost recursive edit or minibuffer.
+C-M-d move forward down one level of parenthesis.
+C-M-e move forward to the next end of a defined function.
+C-M-f move forward arcross one balanced expression.
+C-M-h mark the end of a defined function and point to the beginning.
+
+I found this by doing M-x help RET b to find a help window with all
+the commands.
+
+13. The stroke C-g quits any stroke or program currently in progress.
+
+I found this out by going through the tutorial.
+
+14. The yank function takes the last entry that was killed and places
+it at the current location of the cursor.
+
+I found this out by going through the tutorial.
+
+15. The colors are different and dired shows hidden files that start
+with a period.
+
+I found this out by trying out both commands on /usr/bin.

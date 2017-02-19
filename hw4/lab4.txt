@@ -1,0 +1,185 @@
+First i made a new folder to work in
+
+cd ~/Documents/CS35L
+mkdir hw4
+cd hw4
+
+Then I downloaded the coreutils from the internet
+-rw-r--r-- 1 wum csugrad 0 2054-12-17 17:28:16.000000000 +0000
+wwi-armistice
+-rw-r--r-- 1 wum csugrad 0 2017-02-04 06:59:29.357271000 +0000 now1
+-rw-r--r-- 1 wum csugrad 0 2017-02-04 06:59:28.353180000 +0000 now
+
+wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/coreutils-with-bug.tar.gz
+
+I unzipped it and made a directory to install in
+
+tar -xzf coreutils-with-bug.tar.gz
+mkdir coreUtilsInstall
+
+I changed into the unzipped folder and configured it in order to install
+
+cd coreutils-with-bug
+./configure --prefix=/u/cs/ugrad/wum/Documents/CS35L/hw4/coreUtilsInstall/
+make
+
+The make command failed with an error
+
+In file included from utimecmp.c:41:
+utimens.h:2: error: conflicting types for 'futimens'
+/usr/include/sys/stat.h:374: note: previous declaration of 'futimens'
+was here
+make[3]: *** [utimecmp.o] Error 1
+
+Then I downloaded the patch with 
+
+wget http://web.cs.ucla.edu/classes/winter17/cs35L/assign/coreutils.diff
+
+and applied it using
+
+patch -p0 <coreutils.diff
+make
+make install
+
+and it installed properly into the folder coreUtilsInstall.
+
+The patch fixed the earlier error because it renamed the conflicting
+method futimens so that the coreutils could compile. Before futimens
+was declared in the header file stat.h, so the compiler had an error.
+The patch renamed the method to coreutils_futimens. It also renamed a
+method tee to coreutils_tee. Though the make command did not show an
+error due to this function, the function presumably would have caused
+an error as well after futimens was fixed.
+
+I reproduced the bug by doing
+
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ~/Documents/CS35L/hw4/coreUtilsInstall/bin/ls -lt --full-time wwi-armistice now now1
+
+and got the output
+
+-rw-r--r-- 1 wum csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 wum csugrad 0 2017-02-04 03:40:48.581615502 +0000 now1
+-rw-r--r-- 1 wum csugrad 0 2017-02-04 03:40:47.578579666 +0000 now
+
+In order to debug I moved directories to
+~/Documents/CS35L/hw4/coreutils-with-bug/src
+and ran
+
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+cp ls.c ls.c.old
+
+This made the necessary test files and copied the source code for the
+ls command to ls.c.old so that I can later make a diff file.
+
+I ran
+
+./ls -lt --full-time wwi-armistice
+
+and noticed that in this directory it output
+
+-rw-r--r-- 1 wum csugrad 0 2054-12-17 09:28:16.000000000 -0800 wwi-armistice
+
+Which was different from the original output. In this case, the file
+is actually sorted correctly so I cannot run the buggy ls on this
+file. I looked in ls.c and read the source code in emacs. I saw there
+was a call to qsort on line 3034 so I decided to use this as my
+breakpoint when debugging.
+
+gdb ./ls
+break ls.c:3034
+run -lt /tmp/tmp.XBCt1BBaEh/wwi-armistice /tmp/tmp.XBCt1BBaEh/now /tmp/tmp.XBCt1BBaEh/now1
+
+I ran ls on the buggy files in the debugger and it broke at the
+breakpoint. The breakpoint was the line
+
+qsort (files, files_index, sizeof *files, func);
+
+I did
+
+print func
+
+which output
+
+(int (*)(V, V)) 0x403430 <compare_mtime>
+
+So I know that the files were sorted by modification time.
+To get info about the files that were listed, I did
+
+print files[0]
+
+which output
+
+{name = 0x61ca80 "/tmp/tmp.XBCt1BBaEh/wwi-armistice", stat = {st_dev =
+2054, st_ino = 261159, st_nlink = 1, st_mode = 33188, st_uid = 8469,
+st_gid = 130, __pad0 = 0, st_rdev = 0, st_size = 0, st_blksize = 4096,
+st_blocks = 0, st_atim = {tv_sec = 1486185905, tv_nsec = 805729899},
+st_mtim = {tv_sec = -1613826000, tv_nsec = 0}, st_ctim = {tv_sec =
+1486184994, tv_nsec = 475231555}, __unused = {0, 0, 0}}, linkname =
+0x0, linkmode = 0, linkok = false, filetype = normal}
+
+So under st_mtim for wwi-armistice there was
+
+tv_sec = -1613826000
+
+which causes the error. Most likely, the integer returned by
+compare_mtime overflows when returning to qsort, resulting in a
+negative value which places wwi-armistice at the top of the list
+instead of a positive value which would place wwi-armistice at the
+bottom of the list. I fixed the method compare_mtime to only return 1
+or -1 if the modification times were different. I moved to
+~/Documents/CS35L/hw4/coreutils-with-bug/ and ran
+
+make
+
+to recompile ls.c. Then moving to
+~/Documents/CS35L/hw4/coreutils-with-bug/src/
+and testing again with
+
+./ls -lt /tmp/tmp.XBCt1BBaEh/wwi-armistice /tmp/tmp.XBCt1BBaEh/now /tmp/tmp.XBCt1BBaEh/now1
+
+gives the correct ordering
+
+-rw-r--r-- 1 wum csugrad 0 Feb  3 21:09 /tmp/tmp.XBCt1BBaEh/now1
+-rw-r--r-- 1 wum csugrad 0 Feb  3 21:09 /tmp/tmp.XBCt1BBaEh/now
+-rw-r--r-- 1 wum csugrad 0 Nov 11  1918 /tmp/tmp.XBCt1BBaEh/wwi-armistice
+
+Then i moved up one directory to
+~/Documents/CS35L/hw4/coreutils-with-bug/
+and ran
+
+diff -u src/ls.c.old src/ls.c>lab4.diff
+
+to make a diff file. I added a changelog to this diff file. Then I did
+
+mv lab4.diff ../lab4.diff
+
+to move the diff file to the same folder as lab4.txt and sfrob.c.
+
+Running the commands in my home directory with
+
+cd ~/
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+TZ=UTC0 ls -lt --full-time wwi-armistice now now1
+
+results in
+
+-rw-r--r-- 1 wum csugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 wum csugrad 0 2017-02-04 06:59:29.357271000 +0000 now1
+-rw-r--r-- 1 wum csugrad 0 2017-02-04 06:59:28.353180000 +0000 now
+
+So the negative time is actually stored as a positive time and so the
+seasnet ls returns the correct ordering. This is the problem I
+encountered earlier. It is not correct because it is not the intended
+behaviour, however.

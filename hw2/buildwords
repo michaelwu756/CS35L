@@ -1,0 +1,41 @@
+#!/bin/sh
+
+export LC_ALL='C'
+temp=""
+mode=0
+while read -r line
+do
+    line=$(echo "$line" | sed -e 's/^ *//;s/ *$//;s/`/'\''/g')
+    case $mode in
+	0)
+	    if echo "$line" | grep -q '^<tr>$'
+	    then
+		mode=1
+	    fi
+	    ;;
+      	1)
+	    if echo "$line" | grep -q '^<td>.*</td>$'
+	    then
+		mode=2
+	    else
+		mode=0
+	    fi
+	    ;;
+     	2)
+	    if echo "$line" | grep -q '^<td>.*</td>$'
+	    then
+		line=$(echo "$line" | sed -e 's/<[^>]*>//g' )
+		line=$(echo "$line" | tr -cs 'A-Za-z'\''' '[_*]')
+		line=$(echo "$line" | tr 'A-Z' 'a-z')
+		if echo "$line" | grep -q '^[pk'\''mnwlhaeiou_]*$'
+		then
+		    line=$(echo "$line" | tr '_' '\n')
+		    temp="$temp
+$line"
+		fi
+	    fi
+	    mode=0
+	    ;;
+    esac
+done
+echo "$temp" | sort -u | grep -v '^$'

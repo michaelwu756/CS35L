@@ -1,0 +1,645 @@
+First, I checked locale to see if it was using the C locale. It was
+not so I did
+
+export LC_ALL='C'
+
+Then I created a dictionary of words by doing
+
+sort /usr/share/dict/words>words
+
+Then I downloaded the html in the webpage by doing
+
+curl http://web.cs.ucla.edu/classes/winter17/cs35L/assign/assign2.html
+>assign2
+
+Then I did all the commands
+
+tr -c 'A-Za-z' '[\n*]' <assign2 >result1
+tr -cs 'A-Za-z' '[\n*]' <assign2 >result2
+tr -cs 'A-Za-z' '[\n*]' <assign2 | sort >result3
+tr -cs 'A-Za-z' '[\n*]' <assign2 | sort -u >result4
+tr -cs 'A-Za-z' '[\n*]' <assign2 | sort -u | comm - words >result5
+tr -cs 'A-Za-z' '[\n*]' <assign2 | sort -u | comm -23 - words >result6
+
+to record the results of each command. I viewed them in emacs, along
+with using the man pages of each command to understand what everything
+did.
+
+In result1, every character that is not an alphabetic character is
+replaced by a newline.
+
+result2 is the same as result1, except repeated newlines are replaced
+by a single newline.
+
+result3 is the same as result2, except each line is sorted in ASCII
+order.
+
+result4 is the same as result3, except identical lines are removed.
+
+result5 compares result4 to the list of words, and puts lines that are
+only in result 4 in the first column, words that are only in the list
+of words in the second column, and words in both in the third column.
+
+result6 is the same as result5, except it omits the second and third
+columns.
+
+Effectively the last command separates each word in the document
+onto its own separate line, sorts the words in the document, deletes
+duplicate instances of words, compares the sorted document to the
+dictonary, and finally lists any words that do not appear in the
+dictonary.
+
+Next to make the hwords file I downloaded the html page using
+
+wget http://mauimapp.com/moolelo/hwnwdseng.htm
+
+which made a file hwnwdseng.htm.
+
+I tried to automate commands to extract words in emacs, but I realized
+that I needed to write a shell script to do it.
+
+So I made a new file buildwords in emacs, saved it, and set it
+executable with
+
+chmod +x buildwords
+
+I then edited it with the following text
+
+#!/bin/sh
+
+export LC_ALL='C'
+temp=""
+mode=0
+while read -r line
+do
+    line=$(echo "$line" | sed -e 's/^ *//;s/ *$//;s/`/'\''/g')
+    case $mode in
+	0)
+	    if echo "$line" | grep -q '^<tr>$'
+	    then
+		mode=1
+	    fi
+	    ;;
+      	1)
+	    if echo "$line" | grep -q '^<td>.*</td>$'
+	    then
+		mode=2
+	    else
+		mode=0
+	    fi
+	    ;;
+     	2)
+	    if echo "$line" | grep -q '^<td>.*</td>$'
+	    then
+		line=$(echo "$line" | sed -e 's/<[^>]*>//g' )
+		line=$(echo "$line" | tr -cs 'A-Za-z'\''' '[_*]')
+		line=$(echo "$line" | tr 'A-Z' 'a-z')
+		if echo "$line" | grep -q '^[pk'\''mnwlhaeiou_]*$'
+		then
+		    line=$(echo "$line" | tr '_' '\n')
+		    temp="$temp
+$line"
+		fi
+	    fi
+	    mode=0
+	    ;;
+    esac
+done
+echo "$temp" | sort -u | grep -v '^$'
+
+This script reads every line of input consecutively, removing leading
+and trailing whitespace and replacing ` with '. Then it looks for a
+matching hawaiian word, given the format in the project description,
+then removes the html tags on that line, separates words by an
+underscore, and converts everything to lowercase. It then checks that
+the line only has hawaiian characters and underscores. If true it
+converts underscores to newlines and writes the words into a temporary
+file. After all the words are written on separate lines, the temporary
+file is sorted and duplicates are removed. In the process this outputs
+to stdout the entire dictionary.
+
+To create hwords I run the command
+
+cat hwnwdseng.htm | ./buildwords >hwords
+
+The command to spell check in hawaiian would now be
+
+tr -cs 'A-Za-z'\''' '[\n*]' | tr 'A-Z' 'a-z' | sort -u | comm -23 -
+hwords
+
+To get the result of the spellcheck on the website in english I did 
+
+tr -cs 'A-Za-z' '[\n*]' <assign2 | sort -u | comm -23 - words
+>>lab2.log
+
+and got
+
+ALL
+All
+Are
+Assignment
+Assume
+Automate
+CTYPE
+Check
+Content
+Create
+DOCTYPE
+DTD
+Describe
+Do
+EN
+Eggert
+Eword
+Exp
+Extract
+Find
+HTML
+Hard
+Hint
+Homework
+However
+Hword
+Input
+Keep
+Laboratory
+Linux
+Modify
+PUBLIC
+SEASnet
+Some
+Sort
+Spell
+Submit
+Suppose
+Then
+This
+To
+Type
+UTF
+Use
+VanDeBogart
+We
+Wget
+Write
+You
+Your
+Za
+basedefs
+buildwords
+charset
+cmp
+eggert
+halau
+href
+htm
+html
+http
+hwnwdseng
+hwords
+idx
+lau
+mauimapp
+moolelo
+ndash
+okina
+onlinepubs
+opengroup
+sameln
+td
+toc
+ul
+usr
+wget
+wiki
+wikipedia
+www
+
+This was 80 words.
+
+To get the results of the spellcheck in hawaiian I did
+
+tr -cs 'A-Za-z'\''' '[\n*]' <assign2 | tr 'A-Z' 'a-z' | sort -u | comm
+-23 - hwords >>lab2.log
+
+and got
+
+'
+'a
+'c'
+'content
+'http
+'text
+a
+able
+about
+above
+abovementioned
+accent
+address
+after
+afterwards
+against
+all
+also
+an
+and
+any
+apostrophe
+are
+argument
+arguments
+as
+ascii
+assign
+assignment
+assignment's
+assume
+assumption
+attempt
+automate
+awk
+b
+bar
+basedefs
+be
+before
+being
+body
+br
+briefly
+bug
+bugs
+buildwords
+but
+by
+c
+can
+capitalized
+carriage
+case
+cased
+cases
+cat
+change
+chap
+characters
+charset
+check
+checked
+checker
+checkers
+checking
+checks
+cmp
+columns
+com
+comm
+command
+commands
+commas
+contain
+containing
+contains
+content
+contents
+convenience
+copy
+copying
+copyright
+count
+create
+crude
+cs
+ctype
+d
+describe
+described
+detail
+dict
+dictionary
+did
+differs
+directories
+directory
+disk
+do
+doctype
+doesn't
+don't
+down
+dtd
+duplicate
+duplicates
+each
+eggert
+en
+english
+entries
+equiv
+equivalent
+equivalents
+error
+eword
+examine
+example
+examples
+exp
+export
+export'
+extract
+fetch
+file
+files
+find
+finds
+first
+fix
+following
+foo
+for
+formatted
+from
+generally
+give
+given
+gnu
+grave
+gt
+h
+hand
+handle
+happened
+hard
+has
+hawaiian
+head
+hint
+homework
+hosts
+how
+however
+hr
+href
+htm'
+html
+html'
+http
+hwnwdseng
+hword
+hwords
+id
+idx
+if
+ignore
+immediately
+implementation
+improperly
+in
+input
+into
+introductory
+is
+it
+its
+itself
+just
+k
+keep
+l
+lab
+laboratory
+language
+language'
+last
+later
+lc
+leading
+length'
+less
+let's
+letters
+lexicographically
+li
+like
+line
+link'
+links
+linux
+list
+ln
+locale
+log
+lots
+lower
+lt
+m
+mail
+many
+mauimapp
+may
+mentioned
+merely
+meta
+misspelled
+modify
+moolelo
+more
+multiple
+n
+name
+named
+names
+naming
+ndash
+need
+no
+non
+not
+note
+notebook
+nothing
+number
+o
+obtain
+occurrence
+of
+okina
+on
+one
+onlinepubs
+only
+opengroup
+or
+ordinary
+org
+orthography
+other
+others
+output
+outputs
+p
+page
+particular
+paul
+people
+per
+performed
+please
+portable
+position
+posix
+posix'
+pre
+prefer
+prepared
+previous
+problem
+problems
+project
+public
+pubs
+putting
+r
+rather
+read
+readable
+reading
+record
+recursively
+regular
+reject
+remaining
+removing
+repair
+replace
+replaces
+report
+represent
+reproduce
+result
+resulting
+results
+returns
+right
+rules
+run
+runnable
+running
+sameln
+samp
+save
+script
+scripting
+seasnet
+see
+share
+shell
+should
+shown
+silently
+similarly
+simple
+since
+single
+so
+software
+some
+sort
+sorted
+sorting
+space
+spaces
+special
+spell
+spelling
+standard
+start
+steve
+strict
+subdirectories
+submit
+substitutions
+such
+supports
+suppose
+sure
+symbolic
+system
+systematic
+systematically
+tables
+tag
+take
+takes
+td
+test
+text
+than
+that
+the
+their
+them
+then
+there
+these
+they
+thing
+this
+title
+to
+toc
+tr
+traditional
+transcript
+treat
+true
+two
+type'
+typed
+u
+ul
+under
+unique
+upper
+use
+user
+using
+usr
+utf
+utilities
+v
+vandebogart
+var
+w
+want
+we
+web
+were
+wget
+what
+where
+which
+whose
+why
+wikipedia
+with
+word
+words
+work
+working
+worry
+write
+www
+x
+y
+you
+you're
+your
+z'
+za
+
+This was 414 words.
+
+A word mispelled as english, but not hawaiian was wiki. A word
+misspelled in hawaiian, but not english was word.

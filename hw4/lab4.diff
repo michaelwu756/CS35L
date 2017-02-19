@@ -1,0 +1,29 @@
+ Changelog: made cmp_mtime only return 1 or -1 if the files are
+ different, so that the return value does not overflow and lead to
+ wrong ordering.
+
+--- src/ls.c.old	2017-02-03 21:38:09.494043000 -0800
++++ src/ls.c	2017-02-03 22:33:50.297820000 -0800
+@@ -2877,8 +2877,20 @@
+ cmp_mtime (struct fileinfo const *a, struct fileinfo const *b,
+ 	   int (*cmp) (char const *, char const *))
+ {
+-  int diff = timespec_cmp (get_stat_mtime (&b->stat),
+-			   get_stat_mtime (&a->stat));
++  int diff=0;
++  struct timespec tb = get_stat_mtime(&b->stat);
++  struct timespec ta = get_stat_mtime(&a->stat);
++  if(tb.tv_sec>ta.tv_sec)
++    diff=1;
++  if(ta.tv_sec>tb.tv_sec)
++    diff=-1;
++  if(diff==0)
++  {
++    if(tb.tv_nsec>ta.tv_nsec)
++      diff=1;
++    if(ta.tv_nsec>tb.tv_nsec)
++      diff=-1;
++  }
+   return diff ? diff : cmp (a->name, b->name);
+ }
+ static int compare_mtime (V a, V b) { return cmp_mtime (a, b, xstrcoll); }

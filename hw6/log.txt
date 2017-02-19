@@ -1,0 +1,79 @@
+To start, I added the correct path to the updated sort by doing
+
+export PATH=/usr/local/cs/bin:$PATH
+
+And I checked that the correct version was installed by doing
+
+sort --version
+
+which indicated that the version installed was from coreutils 8.24. This was
+released after version 8.6, so it includes multithreading.
+
+To generate 10,000,000 random floats into a file I did
+
+od -f </dev/urandom | sed 's/^[^ ]* *//' | tr -s ' ' '\n' | 
+head -n 10000000 >file
+
+The command od -f reads in from stdin the number of bytes corresponding to the
+number of bytes in a single precision floating point value, then converts it to
+a float and outputs it. It repeatedly does this until the end of file. With
+</dev/urandom, I pass a file that generates random values to stdin. The command
+sed 's/^[^ ]* *//' takes this output, removes the leading column that od prints
+out, which contains the number of bytes read in octal. It also removes any
+whitespace between the first column and the second column. Thus all that remains
+are random floating point values separated by spaces.  tr -s ' ' '\n' squeezes
+all consecutive spaces and converts them into newlines. Thus a stream of random
+single precision floating point values, one per line with no white space, are
+output. Then finally head -n 10000000 >file writes the first 10,000,000 of these
+floating point values to a file.
+
+To test the runtime, I did
+
+time -p sort -g <file >/dev/null
+
+and got
+
+real 18.18
+user 99.36
+sys 0.33
+
+Then to test with 1, 2, 4, and 8 threads respectively, I did the following and
+got the following results
+
+time -p sort -g --parallel=1 <file >/dev/null
+real 92.13
+user 91.96
+sys 0.17
+
+time -p sort -g --parallel=2 <file >/dev/null
+real 49.20
+user 93.50
+sys 0.20
+
+time -p sort -g --parallel=4 <file >/dev/null
+real 28.50
+user 94.67
+sys 0.28
+
+time -p sort -g --parallel=8 <file >/dev/null
+real 18.58
+user 99.19
+sys 0.32
+
+In these cases sort -g sorts by general numeric order, <file passes the file I
+created earlier into stdin, >/dev/null sends the output of the sort to a garbage
+location. --parallel=n runs the sort with n threads. time -p measures the time
+of the sort command and outputs the results shown. It appears that by default
+sort runs with 8 threads in this case, because the runtimes match when I include
+the --parallel=8 option and when I leave it out. In each case, the user time
+remained largely the same while the real time decreased by almost half every
+time the number of threads doubled. This indicates that the sort benefits
+greatly from multithreading. The user time remains the same because it is the
+total time the process spends in each thread added together, while the real time
+is the actual time on the clock. As more threads get added, the system time also
+increases because the sort has to combine the separate threads at the end to get
+one final output, which increases overhead slightly. So this demonstrates pretty
+clearly the effects of multithreading.
+
+
+

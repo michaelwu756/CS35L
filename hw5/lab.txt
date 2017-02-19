@@ -1,0 +1,112 @@
+First I made a file in emacs called tr2b.c consisting of a main
+function and nothing else. I needed to figure out how to make a main
+function that took arguments. I learned that the necessary function
+signature was
+
+int main(int argc, char** argv)
+
+where argc was the number of arguments, and argv was the array of
+strings that were the arguments. The first element of argv contains
+the program name, so the first argument is at argv[1]. I then added a
+line to check that there were at least two arguments. If there aren't
+it prints out an error to stderr and exits. Next I store the first and
+second arguments as
+
+char* from = argv[1];
+char* to = argv[2];
+
+And then I use strlen to check that they are the same size. If they
+aren't, the program prints out an error to stderr and exits. Finally,
+I looked at every character in 'from' and checked that it did not
+appear in the string already. If there are duplicate characters, the
+program prints out an error to stderr and exits. Next, I need to do
+transliteration. I created a for loop that continuously uses getchar()
+until the EOF marker, which checks if the character read in is
+contained in the string 'from'. If it is, the program uses putchar()
+to print the associated character in the string 'to'. Otherwise it
+prints the original character. I compiled and tested this program with
+
+gcc -g tr2b.c -o tr2b
+./tr2b a
+./tr2b ab c
+./tr2b aa bc
+
+which produced the correct errors of not enough arguments, arguments
+must be the same length, and duplicates are not allowed. Next I ran
+
+printf 'abcdefghijklmnopqrstuvwxyz'|./tr2b a b
+
+to confirm that the program was replacing characters correctly.
+
+I copied the file tr2b.c into a file tr2u.c in order to do the next
+part of the lab with
+
+cp tr2b.c tr2u.c
+
+and editied it so that the calls to getchar() and putchar() are
+replaced with read() and write() and take the appropriate arguments. I
+then compiled and ran with 
+
+gcc -g tr2u.c -o tr2u
+./tr2u a
+./tr2u ab c
+./tr2u aa bc
+
+which produced the correct errors of not enough arguments, arguments
+must be the same lengeth, and duplicates are not allowed. Next I ran
+
+printf 'abcdefghijklmnopqrstuvwxyz'|./tr2u a b
+
+to confirm that the program was replacing characters correctly.
+
+Next to test the files with strace and time I made a file with
+
+head --bytes=5000000 /dev/urandom > input.txt
+
+and ran
+
+strace –o strace_output ./tr2b 'AB' 'XY' < input.txt
+strace -o strace_output2 ./tr2u 'AB' 'XY' < input.txt
+
+to get how many system calls each program made when writing to
+terminal. Since each system call occupies one line, I did
+
+cat strace_output | wc
+
+and got that tr2b made 19742 system calls. I did
+
+cat strace_output2 | wc
+
+and got that tr2u made 10000026 system calls. To get how many system
+calls each program made when storing output in another file, I did
+
+strace -o strace_output3 ./tr2b 'AB' 'XY' < input.txt > output.txt
+strace -o strace_output4 ./tr2u 'AB' 'XY' < input.txt > output.txt
+cat strace_output3 | wc
+cat strace_output4 | wc
+
+I got that tr2b made 184 system calls while tr2u made 10000026 system
+calls.
+Next to find the runtimes I did
+
+time ./tr2b 'AB' 'XY' < input.txt
+
+and got
+
+real    0m6.138s
+user    0m0.240s
+sys     0m0.117s
+
+for tr2b. I did
+
+time ./tr2u 'AB' 'XY' < input.txt
+
+and got
+
+real    0m8.265s
+user    0m0.268s
+sys     0m7.379s
+
+for tr2u.
+
+So tr2b is 2.127 seconds faster than tr2u.

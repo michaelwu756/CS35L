@@ -1,0 +1,21 @@
+#!/bin/sh
+
+echo 'sfrob' 
+{ time ./sfrob <file >/dev/null; } 2>&1
+printf '\n'
+
+echo 'sfrobu' 
+{ time ./sfrobu <file >/dev/null; } 2>&1
+printf '\n'
+
+echo 'sfrobs' 
+{ time ./sfrobs <file >/dev/null; } 2>&1
+printf '\n'
+
+echo 'sfrobu -f' 
+{ time ./sfrobu -f <file >/dev/null; } 2>&1
+printf '\n'
+
+echo 'sfrobs -f' 
+{ time ./sfrobs -f <file >/dev/null; } 2>&1
+printf '\n'

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export LC_ALL='C'
+dir=$1
+string=$(find "$dir" -type f -printf "%P\n")
+IFS='
+'
+string2=$(echo "$string" | sort | grep '^\.')
+string="$string2
+$(echo "$string" | sort | grep -v '^\.')"
+for file1 in $string
+do
+    if [ -r "$file1" ]
+    then
+	substring=$(echo "/$string" | tr '\n' '/' | sed "s:^.*/$file1/::" )
+	substring=$(echo "$substring" | tr '/' '\n')
+	for file2 in $substring
+	do
+	    if cmp -s --  "$file1" "$file2"
+	    then
+		ln -f -- "$file1" "$file2"
+	    fi
+	done
+    else
+	echo "$file1"': Permission Denied'
+    fi
+done
+

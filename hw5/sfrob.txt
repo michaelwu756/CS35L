@@ -1,0 +1,99 @@
+running
+
+time ./sfrob <file
+
+where file has 5000 input elements yields
+
+real    0m0.008s
+user    0m0.003s
+sys     0m0.002s
+
+and running
+
+time ./sfrobu <file
+
+yields
+
+real    0m0.020s
+user    0m0.005s
+sys     0m0.013s
+
+When file has 50000 input elements
+
+time ./sfrob <file
+
+yields
+
+real    0m0.093s
+user    0m0.057s
+sys     0m0.021s
+
+and
+
+time ./sfrobu <file
+
+yields
+
+real    0m0.310s
+user    0m0.047s
+sys     0m0.261s
+
+So sfrobu is a little bit over 3 times slower than sfrob.
+
+Running ./sfrobu on various input data gives the following results.
+
+10 elements 20 comparisons
+20 elements 58 comparisons
+30 elements 111 comparisons
+40 elements 155 comparisons
+50 elements 225 comparisons
+100 elements 547 comparisons
+200 elements 1286 comparisons
+300 elements 2066 comparisons
+400 elements 2954 comparisons
+500 elements 3803 comparisons
+1000 elements 8560 comparisons
+2000 elements 19025 comparisons
+3000 elements 30306 comparisons
+4000 elements 41852 comparisons
+5000 elements 53795 comparisons
+
+Because this is almost linear but curves upwards slightly, and the
+name of the function used to sort the elements is 'qsort', this data
+leads me to believe the computer is using a quicksort algorithm, which
+has time complexity n*log(n). So the comparisons vary with respect to
+n*log(n), where n is the number of input elements.
+
+Running time analysis on sfrob, sfrobu, sfrobs, sfrobu -f, and
+sfrobs -f on the file file with 1000000 elements yields the following data
+
+sfrob
+
+real	0m0.614s
+user	0m0.595s
+sys	0m0.018s
+
+sfrobu
+
+real	0m1.447s
+user	0m0.546s
+sys	0m0.900s
+
+sfrobs
+
+real	0m0.554s
+user	0m0.544s
+sys	0m0.020s
+
+sfrobu -f
+
+real	0m1.665s
+user	0m0.818s
+sys	0m0.846s
+
+sfrobs -f
+
+real	0m0.615s
+user	0m0.609s
+sys	0m0.014s
+

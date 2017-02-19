@@ -1,0 +1,83 @@
+To get coreutils 7.6, I did
+
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+in my home directory. Then I did
+
+tar -xzvf coreutils-7.6.tar.gz
+
+to extract coreutils 7.6. Next I did
+
+mkdir coreutilsInstall
+
+to make an install folder.
+
+I moved to ~/coreutils-7.6/ and ran
+
+./configure --prefix='/u/cs/ugrad/wum/coreutilsInstall'
+make
+make install
+
+to install into this folder. The configure command chooses the install
+directory, while the make command determines what needs to be
+compiled, and the make install command copies the files to the correct
+install directory.
+
+I can now reproduce the bug by running
+
+/u/cs/ugrad/wum/coreutilsInstall/bin/ls -l
+
+which produces output that looks like
+
+-rwxr-xr-x 1 wum csugrad 107211 2017-01-23 12:23 [
+
+We want out put that looks like what you get when you run
+
+ls -l
+-rwxr-xr-x 1 wum csugrad 107211 Jan 23 12:23 [
+
+So i moved into the directory
+
+~/coreutils-7.6/
+
+and used emacs to copy and paste the patch from the forum link
+specified into a file patch_file
+
+with the text from
+
+--- a/src/ls.c
+to
+/* Note we leave %5b etc. alone so user widths/flags are honored.  */
+
+Then I ran
+
+patch -p1 <patch_file
+
+to apply the patch. I used the flag -p1 because that removes
+everything before and including the first backslash. Given the
+directory I was in, that would lead to patching the correct file. Then
+I ran
+
+make
+
+Because ~/coreutils-7.6/src/ls.c was modified, it was
+recompiled. Next I verified that the command ~/coreutils-7.6/src/ls -l
+correctly output what we wanted, and ~/coreutilsInstall/src/ls -l
+output the wrong format.
+
+I also made files with
+
+touch -t 201501010000.00 ~/oldfile
+touch -t 201701010000.00 ~/newfile
+
+and ran the modified and unmodified ls -l on it to verify that the
+patch worked. Running the new ls on an old file shows the year instead
+of a time in the third column for the time. The outputs are as shown
+
+new ls:
+-rw-r--r-- 1 wum csugrad 0 Jan  1  2015 /u/cs/ugrad/wum/oldfile
+-rw-r--r-- 1 wum csugrad 0 Jan  1 00:00 /u/cs/ugrad/wum/newfile
+
+old ls:
+-rw-r--r-- 1 wum csugrad 0 2017-01-01 00:00 /u/cs/ugrad/wum/newfile
+-rw-r--r-- 1 wum csugrad 0 2015-01-01 00:00 /u/cs/ugrad/wum/oldfile

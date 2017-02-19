@@ -1,0 +1,43 @@
+Q1: Why did Brady's patch remove the line "case_long_iso_time_style:"?
+Was it necessary to remove that line? Explain.
+
+It was removed because it was not used anymore since the goto
+statement in the second part of the patch was removed. It was not
+necessary to remove this label, but it makes the code nicer to read.
+
+Q2: If your company adopts this patched version of Coreutils instead
+of the default one, what else should you watch out for? Might this new
+version of Coreutils introduce other problems with your application,
+perhaps in countries where users don't speak English and don't
+understand English-format dates?
+
+You should watch out for the fact that for some countries, it changes
+the number of fields for the output of ls -l, so some scripts that
+parse ls output may not work properly. Also in countries where english
+is not the default language and they format dates differently, in the
+english locale for that country the date format will be in the english
+style. Thus it would be confusing for them to have a different format
+when the language is changed.
+
+Q3: What happens when this script is invoked on an empty file like
+/dev/null, and why?
+
+An IndexError is thrown because there are no lines to choose. The
+script tries to pick a random line from the file given by creating an
+array of lines to choose from. But the array is empty, so trying to
+access an element of it results in an error.
+
+Q4: What happens when this script is invoked with Python 3 rather than
+Python 2, and why?
+
+A syntax error occurs on line 65. The line contains
+
+except IOError as (errno, strerror):
+
+The syntax error occurs because of a change made in the language. In
+python 2, the code in parenthesis is valid but it is not valid in
+python 3. In python 2 this code iterates over the parameters of the
+error and stores them as the variables errno and strerror. In python 3
+this is not valid, because it is confusing and violates the principle
+that explicit is better than implicit.
+
