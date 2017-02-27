@@ -1,7 +1,7 @@
 I booted ubuntu from disk and ran the trial. Then I opened up the terminal and
 checked what was installed using
 
-dpkg --get-selection | grep openssh
+dpkg --get-selections | grep openssh
 
 and saw that only the openssh-client was installed and i needed to install
 openssh-server. So i did
@@ -38,7 +38,11 @@ to change the permissions with
 
 sudo chmod 777 /etc/ssh/sshd_config
 
-and edited the file by doing
+and edited the file by installing emacs with
+
+sudo apt-get install emacs
+
+and doing
 
 sudo emacs /etc/ssh/sshd_config
 
@@ -69,4 +73,4 @@ to the host by doing
 ssh -X Michael@10.97.85.145
 
 which was sucessful. I ran xterm and created a file to verify that I could
-modify data on the host machine and forward windows correctly.
+modify data on the host machine and forward windows correctly. It was sucessful.
