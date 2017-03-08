@@ -1,0 +1,9 @@
+I began by making a file testprogram.c with the following body text
+
+#include<stdio.h>
+#include<math.h>
+int main()
+{
+  double x= cos(sqrt(3.0));
+  printf("%.17g", x);
+}
