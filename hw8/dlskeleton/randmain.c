@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static bool
 writebytes (unsigned long long x, int nbytes)
@@ -57,7 +58,7 @@ main (int argc, char **argv)
   void *dl_handle = dlopen( lib, RTLD_LAZY );
   if (dl_handle==NULL) {
     printf( "Error: %s\n", dlerror() );
-    return;
+    return 1;
   }
  
   /* Resolve the symbol (method) from the object */
@@ -65,7 +66,7 @@ main (int argc, char **argv)
   char *error = dlerror();
   if (error != NULL) {
     printf( "Error: %s\n", error );
-    return;
+    return 1;
   }
 
   int wordsize = sizeof rand64 ();
