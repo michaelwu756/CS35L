@@ -131,7 +131,7 @@ Next I did
 ./getlist.sh <progs | tr -d '\t' | grep '^lib' | sed 's/ .*//' | sort -u
 
 in order to get a sorted list of all the dynamic libraries used by the list of
-programs in progs. In the above commands tr- -d '\t' removes all tabs from the
+programs in progs. In the above commands tr -d '\t' removes all tabs from the
 output of getlist.sh, grep '^lib' finds lines that start with 'lib',
 sed 's/ .*//' removes everything after the first space in each line, and sort -u
 sorts the remaining lines while removing duplicates. This results in the output
