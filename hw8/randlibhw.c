@@ -1,4 +1,5 @@
 #include "randlib.h"
+#include <immintrin.h>
 
 /* Initialize the hardware rand64 implementation.  */
 __attribute__ ((constructor))

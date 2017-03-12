@@ -7,5 +7,5 @@ randlibsw.so:
 	gcc -shared randlibsw.o -o randlibsw.so
 
 randlibhw.so:
-	gcc -c -fPIC randlibhw.c
+	gcc -c -fPIC -mrdrnd randlibhw.c
 	gcc -shared randlibhw.o -o randlibhw.so
