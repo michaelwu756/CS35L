@@ -68,6 +68,11 @@ main (int argc, char **argv)
     printf( "Error: %s\n", error );
     return 1;
   }
+  
+  if(rdrand_supported())
+    printf("HW\n");
+  else
+    printf("SW\n");
 
   int wordsize = sizeof rand64 ();
   int output_errno = 0;
