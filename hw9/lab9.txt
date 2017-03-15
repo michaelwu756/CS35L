@@ -1,0 +1,22 @@
+First I cloned the diffutils repo with
+
+git clone https://git.savannah.gnu.org/git/diffutils.git
+
+This downloaded a copy of the repo onto my local machine, into a folder called
+diffutils. I moved into the diffutils folder and ran
+
+git log>git-log.txt
+
+to get a log of the changes and put it in a text file. The changes consist of
+codes from every commit made to the repo. The changes span back to 1988. Then I
+got the tags for the repo and put it in a text file with
+
+git tag>git-tags.txt
+
+Next I opened git-log.txt in emacs and searched for the commit entitled "maint:
+quote 'like this' or "like this", not `like this'" using the C-s command in
+emacs. I found that the commit was
+
+62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f
+
+ 
