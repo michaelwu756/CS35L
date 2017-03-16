@@ -32,13 +32,49 @@ Quote 'like this' in output.
 that reflects my changes. I saved the message to ChangeLog by doing C-x C-s in
 emacs. Then I committed my changes with the changelog message by doing
 
-git commit -a -F ChangeLog
+git commit -a -e -F ChangeLog
 
-Then I made a patch with
+and editing the commit message so that it did not include the author
+information in the ChangeLog file. Then I made a patch with
 
-git format-patch -1 HEAD
+git format-patch -1 HEAD --stdout>formatted-patch.txt
 
-which made a file
-0001-2017-03-15-Michael-Donald-Wu-wum-lnxsrv03.seas.ucla..patch I renamed this
-to formatted-patch.txt, copied this to my computer and sent this to my partner,
-Jiale He, through email.
+which made a file formatted-patch.txt. I copied this to my computer and sent
+this to my partner, Jiale He, through email. He sent me his patch, which I
+downloaded on my windows machine and copied to the linux server with winSCP as
+formatted-patch-partner.txt. Then I moved into my repo and did
+
+git checkout -b partner v3.0
+
+to make a new branch where I will apply my partner's patch. I copied Jiale's
+patch into the repo and did
+
+git am formatted-patch-partner.txt
+
+to apply the changes. Then I did
+
+./bootstrap
+./configure
+make
+make check
+
+to build and test the patched program. 88 tests were passed, and one did not
+run. I changed back to my branch with
+
+git checkout quote
+
+I rebuilt diff, and then ran
+
+make distdir
+
+which made a folder diffutils-3.0.1-50a7. I looked in that folder's ChangeLog
+and saw that it included all previous changes, with the last change being my
+own.
+
+Next I need to look at eggert's git repo for emacs. I cloned it with
+
+git clone ~eggert/src/gnu/emacs
+
+Then I moved into it and ran
+
+gitk
