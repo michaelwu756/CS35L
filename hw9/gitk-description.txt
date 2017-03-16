@@ -1,0 +1,15 @@
+The topleft most subwindow shows the commit history of the repo. It shows a
+visual of all the commit objects. A circle is a commit object, and the different
+paths are the different branches. A path that moves laterally is a merge. The
+middle top windows shows the author info of each commit or merge. The top right
+window shows the timestamp of the commit or merge. The bottom left window shows
+the commit info for the highlighted commit. It shows changes to lines, author
+info, time, and the commit message, among other info. In the screenshot there
+are no line changes because it's a merge. You can select tick boxes to view the
+previous and new verions of files when there are line changes. In the bottom
+right window there are different views for what was changed in the patch. For a
+commit, it would show the different files that were changed. You can select
+different files to view what was changed in them in the bottom left. You can
+also select the tree option to view the filestructure of the repo. There is a
+text box for the SHA1 hash of the highlighted commit, search options, and the
+row number currently highlighted.

@@ -78,3 +78,14 @@ git clone ~eggert/src/gnu/emacs
 Then I moved into it and ran
 
 gitk
+
+I found that the newest merge not newer than 2015-01-25 (it's not newer than
+this day, it was on this day) was the merge
+
+Merge branch 'master' into xwidget
+by Joakim Verona <joakim@verona.se>
+on 2015-01-25 12:19:27
+
+I screenshotted this as a file gitk-screenshot.png. Then I opened up a new file
+gitk-discription.txt with emacs and wrote a description of all the subviews in
+the gitk program.
