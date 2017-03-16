@@ -13,10 +13,193 @@ got the tags for the repo and put it in a text file with
 
 git tag>git-tags.txt
 
-Next I opened git-log.txt in emacs and searched for the commit entitled "maint:
-quote 'like this' or "like this", not `like this'" using the C-s command in
-emacs. I found that the commit was
+These show the version numbers in the repo. Next I opened git-log.txt in emacs
+and searched for the commit entitled "maint: quote 'like this' or "like this",
+not `like this'" using the C-s command in emacs. I found that the commit was
 
 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f
 
- 
+and generated a patch for the file using
+
+git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f>quote-patch.txt
+
+The git show command showed the changes in the patch. Next I needed to apply
+this patch to diffutils 3.0. So i checked out version 3.0 using
+
+git checkout v3.0
+
+which updated the working directory to version 3.0. Then i patched with
+
+patch -p1<quote-patch.txt
+
+The patch could not find the three files
+
+HACKING
+doc/diffutils.texi
+man/help2man
+
+so i ignored those changes. The patch did not apply all changes correctly,
+rejected changes were stored in .rej files. Original files were stored in .orig
+files. I used git status to get an overview of the changes. The output of git
+status was as follows
+
+# Not currently on any branch.
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   NEWS
+#	modified:   README
+#	modified:   TODO
+#	modified:   doc/diagmeet.note
+#	modified:   ms/config.bat
+#	modified:   ms/config.site
+#	modified:   po/en.po
+#	modified:   src/analyze.c
+#	modified:   src/cmp.c
+#	modified:   src/context.c
+#	modified:   src/diff.c
+#	modified:   src/diff.h
+#	modified:   src/diff3.c
+#	modified:   src/dir.c
+#	modified:   src/ifdef.c
+#	modified:   src/io.c
+#	modified:   src/sdiff.c
+#	modified:   src/side.c
+#	modified:   src/system.h
+#	modified:   src/util.c
+#	modified:   tests/help-version
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	NEWS.orig
+#	README-hacking.orig
+#	README-hacking.rej
+#	README.orig
+#	README.rej
+#	cfg.mk.orig
+#	cfg.mk.rej
+#	ms/config.site.orig
+#	quote-patch.txt
+#	src/cmp.c.orig
+#	src/context.c.orig
+#	src/diff.c.orig
+#	src/diff.c.rej
+#	src/diff.h.orig
+#	src/diff3.c.orig
+#	src/diff3.c.rej
+#	src/dir.c.orig
+#	src/sdiff.c.orig
+#	src/system.h.orig
+#	src/util.c.orig
+#	tests/help-version.orig
+no changes added to commit (use "git add" and/or "git commit -a")
+
+I want to revert changes to the non .c files, which are
+
+NEWS
+README
+TODO
+doc/diagmeet.note
+ms/config.bat
+ms/config.site
+po/en.po
+src/diff.h
+src/system.h
+tests/help-version
+
+so I opened each in emacs and did C-x v = to open a buffer showing changes to
+the files with vc-diff. Then I used C-x v u to do vc-revert to revert all
+changes to the files. Next I need to revert changes to the .c files except the
+changes to character string constants. So I need revert changes to comments and
+such that do not change the output of the program. The files I need to look at
+are
+
+src/analyze.c
+src/cmp.c
+src/context.c
+src/diff.c
+src/diff3.c
+src/dir.c
+src/ifdef.c
+src/io.c
+src/sdiff.c
+src/side.c
+src/util.c
+
+I opened these in emacs, used C-x v = to do vc-diff to get changes to the files,
+then moved my cursor over each hunk and did C-u C-c C-a to revert changes on the
+hunks that were changes to comments. I skipped the ones that were changes to
+string constants. Now I need to look at the rejected changes to the .c files,
+which are contained in the .c.rej files. The two files i need to look at are
+
+src/diff.c.rej
+src/diff3.c.rej
+
+I opened these in emacs, opened the associated file in a new window with C-x 5 f
+and manually made the changes to the character string constants that were
+rejected. I used the emacs C-s search function to find the appropriate lines to
+change. There were 3 hunks in diff.c to change and 1 hunk in diff3.c.
+Next I moved quote-patch.txt out of the git repo and ran
+
+git clean -f
+
+to remove all untracked files. I did 
+
+git diff>quote-3.0-patch.txt
+
+in order to get the changes to the repo that I made and save it as a patch. I
+made a copy of the patch out side the repo in order to save it. I looked in
+README-hacking and found that i needed to run
+
+./bootstrap
+./configure
+make
+make check
+
+in order to build diffutils. I did ldd --version and saw that I was using the
+GNU libc version 2.12 library. So I do not need to apply the additional patch
+mentioned on the assignment spec. I was using lnxsrv03, and found that when I
+did ./bootstrap I got an error that help2man was not found. I needed to add it's
+install location to my path, which I did using
+
+export PATH=$PATH:/usr/local/cs/bin
+
+Then I did the above commands to build diffutils. I ran the version of diffutils
+that I just built with
+
+./src/diff . -
+
+and 
+
+./src/diff --help
+
+and saw that there were no ` characters. So my patch worked. Next I want to
+compare my patch with the original source code. I did
+
+mkdir diffutils-3.0
+mkdir diffutils-3.0-patch
+cp src/*.c --target-directory=diffutils-3.0-patch
+
+to copy the patched files into the temporary folder diffutils-3.0-patch, and
+make a folder diffutils-3.0. Then to get the original files, I did
+
+git checkout v3.0 src
+
+to get the original source files. I copied them to diffutils-3.0 with
+
+cp src/*.c --target-directory=diffutils-3.0
+
+Then to compare the files I did
+
+./src/diff -pru diffutils-3.0 diffutils-3.0-patch >quote-3.0-test.txt
+
+which generated a file quote-3.0-test.txt. Comparing quote-3.0-patch.txt to
+quote-3.0-test.txt with
+
+./src/diff -u quote-3.0-patch.txt quote-3.0-test.txt
+
+shows many differences. The differences occur because of differences in line
+numbers and formatting. Every ` that was supposed to be changed got changed
+correctly.
