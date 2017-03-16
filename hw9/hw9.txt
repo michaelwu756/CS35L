@@ -38,5 +38,7 @@ Then I made a patch with
 
 git format-patch -1 HEAD
 
-which made a file 0001-2017-03-15-Michael-Donald-Wu-wum-lnxsrv03.seas.ucla..patch
-I copied this to my computer and sent this to my partner, Jiale He, through email.
+which made a file
+0001-2017-03-15-Michael-Donald-Wu-wum-lnxsrv03.seas.ucla..patch I renamed this
+to formatted-patch.txt, copied this to my computer and sent this to my partner,
+Jiale He, through email.
